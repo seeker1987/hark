@@ -1,0 +1,6 @@
+87f162ac0e9b10d81665e0f63ee429d0aadd39307ef1a6a10d75101825cb8a41  run_cara.py
+6db5107f93acebc44d1015f292eb5eb2807a92720c991572bcc9e759c08cd520  scenarios.json
+125844b9e3f79e300982604b4626e32371f01eb91bc9bb969dd8dcc321296af2  PREREG.md
+harness-only change after freeze: --deadline flag (aborts in-flight calls so runs fit 10-minute windows; aborted episodes are logged as errors and rerun). Protocol unchanged.
+f012af55f01abad8151beafd85fc9ca3edc465bba58a7bd64528175be8ddc7bc  run_cara.py
+deviation 2026-10-09 21:35 IST: moonshotai/kimi-k3 replaced by nvidia/nemotron-3-ultra-550b-a55b (kimi ~18 s per call, 0 usable episodes in two windows; not feasible on the free tier).

@@ -1,4 +1,4 @@
-# hark: absorption drift experiments
+# Alignment-Laboratory: absorption drift experiments
 
 Behavioural replication kits and results for testing **absorption drift**, a hypothesised recall-behaviour dissociation in which a model keeps executing a task after the condition that made the task valid has failed, even though it can still recall that condition. Part of the *Context-Persistent Alignment* framework (Interpretation / Persistence / Authority layers) and the CARA proposal.
 

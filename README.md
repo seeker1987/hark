@@ -4,7 +4,7 @@ Behavioural replication kits and results for testing **absorption drift**, a hyp
 
 Claims are labelled Established / Proposed / Hypothesis / Open. **Absorption drift is a hypothesis and has not been demonstrated.** In the runs below it was largely not observed.
 
-## Status at a glance (10 October 2026)
+## Status at a glance (10 October 2026, evening)
 
 | Experiment | What it tests | Model(s) with usable results | Headline |
 | --- | --- | --- | --- |
@@ -12,7 +12,7 @@ Claims are labelled Established / Proposed / Hypothesis / Open. **Absorption dri
 | `experiment-v0.2/` | Preregistered revision: scripted transcripts, one decision per trial; idle-history control, near and gradual cues, same-thread dissociation probe, mitigation arms 1-5 | gpt-oss-20b, nemotron-3-super-120b | Drift near zero, no depth dependence. Momentum hypothesis not supported |
 | `experiment-v0.3/` | Closed-loop agent: the model picks every action; baseline vs Stage 1 binding vs full CARA governor | gpt-oss-20b (480 episodes) | Baseline continued after invalidation in 1 of 49 episodes. Ungrounded binding caused 36% (Stage 1) and 65% (CARA) false interruptions vs 7% for baseline |
 | `experiment-v0.4/` | Grounded binding: each validity condition must quote the operator's text | gpt-oss-20b (320 episodes) | False interruptions fell to 17% (Stage 1) and 14% (CARA); 0 of 87 continuations after invalidation |
-| `experiment-v0.5/` (running) | Long-horizon stress test: 40-unit tasks, early vs late shift, self-written memory summaries with history reset, passive vs active telemetry, deadline pressure; baseline vs grounded CARA | gpt-oss-20b complete (240 episodes); gemma-4-31b-it, nemotron-3-super in progress | Not yet analysed. Kit and results will be added when the run ends |
+| `experiment-v0.5/` | Long-horizon stress test: 40-unit tasks, early vs late shift, self-written summaries, passive vs active telemetry, deadline pressure; baseline vs grounded CARA | gpt-oss-20b (240), gemma-4-31b-it (140 of 240), nemotron-3-super (65 of 240); GLM-5.3 none | Continuation after invalidation appeared under stress (up to 94%), mostly unaware; CARA cut it to 0-7%. Provisional. Kit will be added later |
 
 This README is updated after each experiment completes.
 
@@ -21,6 +21,7 @@ This README is updated after each experiment completes.
 - **v0.2** (861 usable records, 88 error records skipped): drift on invalidating cues was near zero at every depth. The few drifts were at depth 1, on cues that needed inference, and the same-thread probe usually showed the model knew the condition had failed. Read `experiment-v0.2/results/summary_interim.md` first.
 - **v0.3:** baseline ICR (continued after an invalidating shift) was 2% (1/49, 95% CI 0-11%); shift position (step 4 vs 16) made no difference. Cause of the binding problem: the LLM that compiles the binding record invented conditions the operator never set. Overhead was about +58% calls per mutating step.
 - **v0.4:** prompt-level grounding did most of the work (the checker rejected 0 conditions). Grounded CARA false interruptions were 14% (95% CI 8-22%) against 7% for baseline (difference +6 points, CI -4 to +17, inconclusive). Unrelated alarm lines still halted 28-31% of runs. Overhead was about +25%.
+- **v0.5 (provisional, incomplete for two models):** pooled baseline continuation on the quiet cue was 0% with passive telemetry, 64% (35-85%) with active telemetry, 94% (72-99%) with self-summary plus active telemetry, 94% (73-99%) under stress. Late vs early shift made no clear difference (+10 points, CI -10 to +27). CARA contrast -82 points (CI -95 to -67); false-stop difference about 0 (CI -8 to +9). Exploratory split: most continuations (41 of 50) were unaware, i.e. the shifted reading was seen late, though end probes later showed the models knew. Absorption drift remains a Hypothesis.
 
 **Reading these results:** the bottleneck found so far is calibrated interpretation (knowing which conditions matter), not persistence. CARA's benefit on continuation cannot be measured while the baseline barely drifts.
 
@@ -30,6 +31,7 @@ This README is updated after each experiment completes.
 - 8 synthetic scenarios, n=2 per cell, temperature 0.7, NVIDIA free-tier hosts that may add hidden system prompts.
 - v0.4 compares against v0.3 baseline data from an earlier session, not a baseline rerun.
 - v0.2: `results/results_glm.jsonl.gz` (161 records, 16 errors, GLM-5.3) is included but not part of the interim summary.
+- v0.5: n=1 per cell, gemma and nemotron incomplete, GLM-5.3 produced no usable episodes, 209 error episodes excluded, aware/unaware split is coarse and exploratory. Kit and results will be added later.
 - MTA (arm 6) is not tested. It needs training access and is out of scope for these kits.
 
 ## Repository layout

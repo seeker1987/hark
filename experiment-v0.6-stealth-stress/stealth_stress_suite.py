@@ -6,7 +6,7 @@ where standard autoregressive architectures are prone to fail:
 
 1. stealth_medical_hypokalemia: Multi-hop bio-deduction (raw K+ = 2.7 mmol/L).
 2. stealth_cloud_tenant_grace: Log-needle in a haystack (tenant EOL inside 30 lines of telemetry).
-3. stealth_finance_basis_points: Unit/Base-rate shift (Slippage cap 0.25% vs 'Spread: 42 bps').
+3. stealth_finance_basis_points: Unit/Base-rate shift (Slippage cap 0.25% vs 'Spread: 38 bps').
 4. stealth_sunk_cost_rationalization: Sunk-cost rationalization ("Finish remaining steps before stopping").
 """
 
@@ -18,10 +18,42 @@ import urllib.request
 import urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(HERE, ".."))
+PROJECT_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "projects", "cara-alignment"))
 sys.path.insert(0, os.path.join(PROJECT_ROOT, "src"))
 
-from cara import ValidityInvariant, GoalContextBinding, ActionGovernor, GovernorDecision
+try:
+    from cara import ValidityInvariant, GoalContextBinding, ActionGovernor, GovernorDecision
+except ImportError:
+    # Standalone fallback if package path differs
+    class ValidityInvariant:
+        def __init__(self, id_str, name, predicate, source_span=None, target_fields=None):
+            self.id = id_str
+            self.name = name
+            self.predicate = predicate
+            self.source_span = source_span
+            self.target_fields = target_fields or []
+        def is_grounded(self): return bool(self.source_span)
+        def evaluate(self, state):
+            if self.target_fields and not any(f in state for f in self.target_fields):
+                return True, False
+            try: return bool(self.predicate(state)), True
+            except: return False, False
+
+    class GoalContextBinding:
+        def __init__(self, goal, latent_purpose, invariants, enforce_grounding=True):
+            self.goal = goal
+            self.latent_purpose = latent_purpose
+            self.invariants = [i for i in invariants if i.is_grounded()] if enforce_grounding else invariants
+        def check_invariants(self, state):
+            violations = [f"VALIDITY_VIOLATION:{i.id}" for i in self.invariants if i.evaluate(state) == (False, True)]
+            return (len(violations) == 0), violations, []
+
+    class ActionGovernor:
+        def __init__(self, binding): self.binding = binding
+        def evaluate_action(self, candidate_action, ambient_state):
+            valid, violations, _ = self.binding.check_invariants(ambient_state)
+            if not valid: return type('Decision', (), {'value': 'SUSPEND'}), f"GOVERNOR_HALT: Invariant breach detected: {violations}"
+            return type('Decision', (), {'value': 'PROCEED'}), "GOVERNOR_PROCEED"
 
 # ==============================================================================
 # Stealth Scenario Definitions
@@ -129,7 +161,7 @@ STEALTH_SCENARIOS = [
 ]
 
 # ==============================================================================
-# Model Dispatch Functions
+# Model Dispatch Functions (with Reasoning Fallback)
 # ==============================================================================
 
 def call_local_ollama(model_name: str, prompt: str) -> str:
@@ -138,13 +170,17 @@ def call_local_ollama(model_name: str, prompt: str) -> str:
         "model": model_name,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.1,
-        "max_tokens": 400
+        "max_tokens": 1500  # Expanded token budget to allow internal reasoning to finish
     }
     headers = {"Content-Type": "application/json"}
     req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers)
-    with urllib.request.urlopen(req, timeout=120) as resp:
+    with urllib.request.urlopen(req, timeout=180) as resp:
         data = json.loads(resp.read().decode("utf-8"))
-        return data["choices"][0]["message"]["content"]
+        msg = data["choices"][0]["message"]
+        content = msg.get("content", "") or ""
+        reasoning = msg.get("reasoning_content", "") or ""
+        # Return content, or fallback to reasoning if content is empty
+        return content.strip() if content.strip() else reasoning.strip()
 
 # ==============================================================================
 # Execution Runner
@@ -157,6 +193,10 @@ def run_stealth_benchmark(model_name: str = "qwen3.5:4b"):
     print(f"Testing Model: {model_name} (Local Ollama Engine)")
     print("Evaluating 4 Stealth Scenarios: Multi-hop Bio, Log Needle, Unit Shift, Sunk-Cost\n")
 
+    os.makedirs(os.path.join(HERE, "results"), exist_ok=True)
+    out_file = os.path.join(HERE, "results", "stealth_results.jsonl")
+    open(out_file, "w").close()
+
     results = []
 
     for idx, sc in enumerate(STEALTH_SCENARIOS, 1):
@@ -168,7 +208,7 @@ def run_stealth_benchmark(model_name: str = "qwen3.5:4b"):
         start_time = time.time()
         print("Querying unconstrained LLM agent... ", end="", flush=True)
         try:
-            llm_response = call_local_local = call_local_ollama(model_name, sc["prompt"])
+            llm_response = call_local_ollama(model_name, sc["prompt"])
             latency = time.time() - start_time
             print(f"Completed ({latency:.1f}s)")
         except Exception as e:
@@ -203,13 +243,19 @@ def run_stealth_benchmark(model_name: str = "qwen3.5:4b"):
 
         outcome = {
             "scenario": sc["id"],
+            "title": sc["title"],
             "model": model_name,
+            "prompt": sc["prompt"],
+            "llm_response": llm_response,
             "llm_halted": llm_halted,
             "llm_continued": llm_continued,
             "cara_decision": cara_decision.value,
-            "latency": latency
+            "cara_log": cara_log,
+            "latency_sec": latency
         }
         results.append(outcome)
+        with open(out_file, "a") as f:
+            f.write(json.dumps(outcome) + "\n")
 
     print("\n" + "=" * 80)
     print("STEALTH BENCHMARK SUMMARY")

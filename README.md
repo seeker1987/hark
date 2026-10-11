@@ -6,7 +6,7 @@ Claims are labelled Established / Proposed / Hypothesis / Open. **Absorption dri
 
 ## Two sets of experiments
 
-- **`hark-experiments/`**: kits designed, run and analysed by Hark (an AI agent working for the author) on hosted models through free API tiers (NVIDIA build). Versions v0.1 to v0.5, with v0.7 to follow. The status table and results below describe this set.
+- **`long-horizon-experiments/`**: long-horizon kits designed, run and analysed by Hark (an AI agent working for the author) on hosted models through free API tiers (NVIDIA build). Versions v0.1 to v0.5, with v0.7 to follow. The status table and results below describe this set.
 - **Root-level `experiment-v0.5-local-ollama/` and `experiment-v0.6-stealth-stress/`**: separate experiments run by the author on a Mac with Ollama (local qwen3.5:4b). They share version numbers with the Hark set but are independent kits; see each folder's `RESULTS.md`.
 
 Hark's next kit is numbered v0.7 to avoid clashing with the author's v0.6.
@@ -15,17 +15,17 @@ Hark's next kit is numbered v0.7 to avoid clashing with the author's v0.6.
 
 | Experiment | What it tests | Model(s) with usable results | Headline |
 | --- | --- | --- | --- |
-| `hark-experiments/experiment-v0.1/` | First kit: 8 scenarios, cues control / quiet / loud / decoy, depths 1, 6, 15 | None (never run on a real model) | Superseded by v0.2 |
-| `hark-experiments/experiment-v0.2/` | Preregistered revision: scripted transcripts, one decision per trial; idle-history control, near and gradual cues, same-thread dissociation probe, mitigation arms 1-5 | gpt-oss-20b, nemotron-3-super-120b | Drift near zero, no depth dependence. Momentum hypothesis not supported |
-| `hark-experiments/experiment-v0.3/` | Closed-loop agent: the model picks every action; baseline vs Stage 1 binding vs full CARA governor | gpt-oss-20b (480 episodes) | Baseline continued after invalidation in 1 of 49 episodes. Ungrounded binding caused 36% (Stage 1) and 65% (CARA) false interruptions vs 7% for baseline |
-| `hark-experiments/experiment-v0.4/` | Grounded binding: each validity condition must quote the operator's text | gpt-oss-20b (320 episodes) | False interruptions fell to 17% (Stage 1) and 14% (CARA); 0 of 87 continuations after invalidation |
-| `hark-experiments/experiment-v0.5/` | Long-horizon stress test: 40-unit tasks, early vs late shift, self-written summaries, passive vs active telemetry, deadline pressure; baseline vs grounded CARA | gpt-oss-20b (240), gemma-4-31b-it (140 of 240), nemotron-3-super (65 of 240); GLM-5.3 none | Continuation after invalidation appeared under stress (up to 94%), mostly unaware; CARA cut it to 0-7%. Provisional |
+| `long-horizon-experiments/experiment-v0.1/` | First kit: 8 scenarios, cues control / quiet / loud / decoy, depths 1, 6, 15 | None (never run on a real model) | Superseded by v0.2 |
+| `long-horizon-experiments/experiment-v0.2/` | Preregistered revision: scripted transcripts, one decision per trial; idle-history control, near and gradual cues, same-thread dissociation probe, mitigation arms 1-5 | gpt-oss-20b, nemotron-3-super-120b | Drift near zero, no depth dependence. Momentum hypothesis not supported |
+| `long-horizon-experiments/experiment-v0.3/` | Closed-loop agent: the model picks every action; baseline vs Stage 1 binding vs full CARA governor | gpt-oss-20b (480 episodes) | Baseline continued after invalidation in 1 of 49 episodes. Ungrounded binding caused 36% (Stage 1) and 65% (CARA) false interruptions vs 7% for baseline |
+| `long-horizon-experiments/experiment-v0.4/` | Grounded binding: each validity condition must quote the operator's text | gpt-oss-20b (320 episodes) | False interruptions fell to 17% (Stage 1) and 14% (CARA); 0 of 87 continuations after invalidation |
+| `long-horizon-experiments/experiment-v0.5/` | Long-horizon stress test: 40-unit tasks, early vs late shift, self-written summaries, passive vs active telemetry, deadline pressure; baseline vs grounded CARA | gpt-oss-20b (240), gemma-4-31b-it (140 of 240), nemotron-3-super (65 of 240); GLM-5.3 none | Continuation after invalidation appeared under stress (up to 94%), mostly unaware; CARA cut it to 0-7%. Provisional |
 
 This README is updated after each experiment completes.
 
 ## Results in brief
 
-- **v0.2** (861 usable records, 88 error records skipped): drift on invalidating cues was near zero at every depth. The few drifts were at depth 1, on cues that needed inference, and the same-thread probe usually showed the model knew the condition had failed. Read `hark-experiments/experiment-v0.2/results/summary_interim.md` first.
+- **v0.2** (861 usable records, 88 error records skipped): drift on invalidating cues was near zero at every depth. The few drifts were at depth 1, on cues that needed inference, and the same-thread probe usually showed the model knew the condition had failed. Read `long-horizon-experiments/experiment-v0.2/results/summary_interim.md` first.
 - **v0.3:** baseline ICR (continued after an invalidating shift) was 2% (1/49, 95% CI 0-11%); shift position (step 4 vs 16) made no difference. Cause of the binding problem: the LLM that compiles the binding record invented conditions the operator never set. Overhead was about +58% calls per mutating step.
 - **v0.4:** prompt-level grounding did most of the work (the checker rejected 0 conditions). Grounded CARA false interruptions were 14% (95% CI 8-22%) against 7% for baseline (difference +6 points, CI -4 to +17, inconclusive). Unrelated alarm lines still halted 28-31% of runs. Overhead was about +25%.
 - **v0.5 (provisional, incomplete for two models):** pooled baseline continuation on the quiet cue was 0% with passive telemetry, 64% (35-85%) with active telemetry, 94% (72-99%) with self-summary plus active telemetry, 94% (73-99%) under stress. Late vs early shift made no clear difference (+10 points, CI -10 to +27). CARA contrast -82 points (CI -95 to -67); false-stop difference about 0 (CI -8 to +9). Exploratory split: most continuations (41 of 50) were unaware, i.e. the shifted reading was seen late, though end probes later showed the models knew. Absorption drift remains a Hypothesis.
@@ -45,7 +45,7 @@ This README is updated after each experiment completes.
 
 ```
 docs/                               CARA white paper, Context-Persistent Alignment v2, MTA working paper rev 0.3, diagrams
-hark-experiments/                   Experiments run by Hark on hosted models
+long-horizon-experiments/                   Experiments run by Hark on hosted models
   experiment-v0.1/                  First kit (unrun)
   experiment-v0.2/                  PREREG.md, FREEZE.sha256, run_experiment.py, analyze.py, scenarios.json, results/
   experiment-v0.3/                  PREREG.md, RESULTS.md, FREEZE.sha256, run_cara.py, analyze_cara.py, runchunk.sh, results/
@@ -64,7 +64,7 @@ Each experiment's `PREREG.md` was frozen before its main run, with SHA-256 hashe
 - v0.3: a `--deadline` flag added to `run_cara.py`, and a model substitution (moonshotai/kimi-k3 replaced by nvidia/nemotron-3-ultra-550b-a55b because kimi was too slow to get usable episodes).
 - v0.4: no post-freeze changes.
 
-To check: `cd hark-experiments/experiment-v0.4 && sha256sum -c FREEZE.sha256`. For v0.2 and v0.3, the first listed hash of the runner is the pre-change version and is expected to fail; the later one should pass.
+To check: `cd long-horizon-experiments/experiment-v0.4 && sha256sum -c FREEZE.sha256`. For v0.2 and v0.3, the first listed hash of the runner is the pre-change version and is expected to fail; the later one should pass.
 
 ## Running
 
@@ -72,11 +72,11 @@ Python 3.10+, standard library only for the runners. Set `NVIDIA_API_KEY` (or `O
 
 ```bash
 # v0.2 (see the header of run_experiment.py for flags)
-python3 hark-experiments/experiment-v0.2/run_experiment.py ...
-python3 hark-experiments/experiment-v0.2/analyze.py ...
+python3 long-horizon-experiments/experiment-v0.2/run_experiment.py ...
+python3 long-horizon-experiments/experiment-v0.2/analyze.py ...
 
 # v0.3 / v0.4
-cd hark-experiments/experiment-v0.4
+cd long-horizon-experiments/experiment-v0.4
 python3 run_cara.py --models openai/gpt-oss-20b --n 2 --out results/episodes_gpt-oss-20b.jsonl
 python3 analyze_cara.py results/episodes_gpt-oss-20b.jsonl > results/summary.md
 ```

@@ -6,10 +6,10 @@ Claims are labelled Established / Proposed / Hypothesis / Open. **Absorption dri
 
 ## Two sets of experiments
 
-- **`long-horizon-experiments/`**: long-horizon kits designed, run and analysed by Hark (an AI agent working for the author) on hosted models through free API tiers (NVIDIA build). Versions v0.1 to v0.5, with v0.7 to follow. The status table and results below describe this set.
+- **`long-horizon-experiments/`**: long-horizon kits designed, run and analysed by Hark (an AI agent working for the author) on hosted models through free API tiers (NVIDIA build). Versions v0.1 to v0.5, with v0.6 to follow. The status table and results below describe this set.
 - **Root-level `experiment-v0.5-local-ollama/` and `experiment-v0.6-stealth-stress/`**: separate experiments run by the author on a Mac with Ollama (local qwen3.5:4b). They share version numbers with the Hark set but are independent kits; see each folder's `RESULTS.md`.
 
-Hark's next kit is numbered v0.7 to avoid clashing with the author's v0.6.
+The long-horizon set's next kit (immune-system test, running) is v0.6; it is separate from the author's root-level `experiment-v0.6-stealth-stress/`.
 
 ## Status at a glance (Hark experiments, 11 October 2026)
 
